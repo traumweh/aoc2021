@@ -13,52 +13,37 @@ def init() -> list:
     return data
 
 def task1(data: list) -> int:
-    # count number of zeros / ones per column
-    n_zeros = np.zeros((data.shape[1])) + np.sum(data, axis=0)
-    n_ones = np.zeros((data.shape[1])) + np.abs(np.sum(1 - data, axis=0))
-
-    # connect to single array
-    stack = np.column_stack((n_zeros, n_ones))
-    gamma = 0
-    epsilon = 0
-    length = stack.shape[0]
-
-    # for each column check if more zeros or ones
-    for i in range(0, length):
-        if np.argmax(stack[i]) == 0:
-            epsilon += 2 ** (length - 1 - i)
-        else:
-            gamma += 2 ** (length - 1 - i)
+    gamma_bits = np.round(np.mean(data, axis=0)).astype(np.int32)
+    gamma = bitarr_to_int(gamma_bits)
+    epsilon = bitarr_to_int(1 - gamma_bits)
 
     # return power consumption
     return gamma * epsilon
 
 def task2(data: list) -> int:
-    def calc(data: list, negate: bool) -> int:
+    def calc(data: list, oxygen: bool) -> int:
         copy = data.copy()
         i = 0
 
         while len(copy) > 1:
-            ones = np.sum(copy, axis=0)
-            zeros = np.abs(np.sum(1 - copy, axis=0))
+            zeros = np.sum(1 - copy[:,i], axis=0)
+            ones = np.sum(copy[:,i], axis=0)
+            most_common_bit = 1 if ones >= zeros else 0
 
-            check = ones[i] >= zeros[i]
-            if (check if not negate else not check):
-                copy = copy[copy[:,i] != 1]
+            if oxygen:
+                copy = copy[copy[:,i] == most_common_bit]
             else:
-                copy = copy[copy[:,i] != 0]
+                copy = copy[copy[:,i] != most_common_bit]
 
             i += 1
-        
-        c = 0
-        for bit in copy[0]:
-            c = (c << 1) | bit
 
-        return c
+        return bitarr_to_int(copy[0])
 
-    # negate = True     ->  most common; ones >= zeros
-    # negate = False    ->  least common; ones < zeros
-    return calc(data, False) * calc(data, True)
+
+    return calc(data, True) * calc(data, False)
+
+def bitarr_to_int(bit_arr: np.array) -> int:
+    return bit_arr.dot(2**np.arange(bit_arr.size)[::-1])
 
 
 data = init()

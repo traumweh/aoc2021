@@ -11,7 +11,7 @@ def init() -> tuple[np.array, np.array]:
         raw = f.readlines()
 
         # extract first row as float32-np.array
-        draws = np.fromiter([int(s) for s in raw.pop(0).split(",")], dtype=np.float32)
+        draws = np.fromiter([s for s in raw.pop(0).split(",")], dtype=np.float32)
 
         # convert bingo boards into np.array of dim (#boards, 5, 5)
         boards = np.zeros((len(raw) // 6,5,5))
