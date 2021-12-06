@@ -8,7 +8,7 @@ def init() -> np.array:
 
     # load and int-cast data
     with open("input", "r") as f:
-        data = np.array(f.readline().split(","), dtype=np.int8)
+        data = np.array(f.readline().split(","), dtype=np.uint8)
 
     return data
 
@@ -22,7 +22,7 @@ def simulate_population(data: np.array, n_iterations: int) -> int:
     # create lanternfish array which holds 9 values.
     # each value e is the amount of lanternfishes who need idx_of(e) 
     # days (iterations) until they spawn a new lanternfish
-    lfs = np.zeros((9,), dtype=np.int64)
+    lfs = np.zeros((9,), dtype=np.uint256)
 
     # initialise lfs with the input data
     for d in data:
