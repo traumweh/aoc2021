@@ -2,21 +2,12 @@
 import os, sys
 
 def init() -> list:
-    # change working dir
-    os.chdir(os.path.dirname(sys.argv[0]))
+    os.chdir(os.path.dirname(sys.argv[0])) # change working dir
 
-    # load and int-cast data
     with open("input", "r") as f:
-        data = f.readlines()
+        return f.readlines()
 
-    return data
+def tasks(data: list) -> tuple:
+    return (0,0)
 
-def task1(data: list) -> int:
-    return 0
-
-def task2(data: list) -> int:
-    return 0
-
-
-data = init()
-print(f"1.) {task1(data)}\t2.) {task2(data)}")
+print("1.) {}\t2.) {}".format(*tasks(init())))
