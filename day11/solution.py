@@ -15,19 +15,16 @@ def tasks(data: list) -> tuple:
     while task2 == -1:
         i += 1
         data += 1
-        flashing = np.argwhere(data > 9)
 
-        while len(flashing) > 0:
+        while len(flashing := np.argwhere(data > 9)) > 0:
             for ix, iy in flashing:
                 (minx, maxx) = (max(0, ix-1), min(data.shape[0], ix+2))
-                (miny, maxy)= (max(0, iy-1), min(data.shape[1], iy+2))
+                (miny, maxy) = (max(0, iy-1), min(data.shape[1], iy+2))
                 data[minx:maxx,miny:maxy] += 1
                 data[ix,iy] = -np.inf
 
                 if i <= 100:
                     task1 += 1
-
-            flashing = np.argwhere(data > 9)
 
         if data[data == -np.inf].size == data.size:
             task2 = i
