@@ -1,37 +1,45 @@
 #!/usr/bin/env python3
-import os, sys
 import numpy as np
 
-def init() -> list:
-    os.chdir(os.path.dirname(sys.argv[0])) # change working dir
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            self.data = np.asarray([list(line.strip()) for line in 
+                    f.readlines()], dtype=np.float64)
 
-    with open("input", "r") as f:
-        return np.asarray([list(line.strip()) for line in f.readlines()], dtype=np.float64)
+        self.__tasks()
 
-def tasks(data: list) -> tuple:
-    task1 = i = 0
-    task2 = -1
+    def __tasks(self) -> tuple:
+        self.task1 = i = 0
+        self.task2 = -1
 
-    while task2 == -1:
-        i += 1
-        data += 1
+        while self.task2 == -1:
+            i += 1
+            self.data += 1
 
-        while len(flashing := np.argwhere(data > 9)) > 0:
-            for ix, iy in flashing:
-                (minx, maxx) = (max(0, ix-1), min(data.shape[0], ix+2))
-                (miny, maxy) = (max(0, iy-1), min(data.shape[1], iy+2))
-                data[minx:maxx,miny:maxy] += 1
-                data[ix,iy] = -np.inf
+            while len(flashing := np.argwhere(self.data > 9)) > 0:
+                for ix, iy in flashing:
+                    (minx, maxx) = (max(0, ix-1), min(self.data.shape[0], ix+2))
+                    (miny, maxy) = (max(0, iy-1), min(self.data.shape[1], iy+2))
+                    self.data[minx:maxx,miny:maxy] += 1
+                    self.data[ix,iy] = -np.inf
 
-                if i <= 100:
-                    task1 += 1
+                    if i <= 100:
+                        self.task1 += 1
 
-        if data[data == -np.inf].size == data.size:
-            task2 = i
+            if self.data[self.data == -np.inf].size == self.data.size:
+                self.task2 = i
 
-        data[data == -np.inf] = 0
+            self.data[self.data == -np.inf] = 0
 
-    return task1, task2
+        return self.task1, self.task2
+
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
-print("1.) {}\t2.) {}".format(*tasks(init())))
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

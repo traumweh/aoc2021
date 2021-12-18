@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-import os, sys
 import numpy as np
 
-def init() -> tuple[np.array, np.array]:
-    # change working dir
-    os.chdir(os.path.dirname(sys.argv[0]))
-
-    # load data
-    with open("input", "r") as f:
-        raw = f.readlines()
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            raw = f.readlines()
 
         # extract first row as float32-np.array
-        draws = np.fromiter([s for s in raw.pop(0).split(",")], dtype=np.float32)
+        draws = np.fromiter([s for s in raw.pop(0).split(",")], 
+                    dtype=np.float32)
 
         # convert bingo boards into np.array of dim (#boards, 5, 5)
         boards = np.zeros((len(raw) // 6,5,5))
@@ -21,64 +18,76 @@ def init() -> tuple[np.array, np.array]:
                 # add row as float32-row to board in boards-array
                 boards[i // 6, (i % 6) - 1] = s.strip().split()
 
-    return (draws, boards)
+        self.draws = draws
+        self.boards = boards
+        self.__task1()
+        self.__task2()
 
-def task1(draws: np.array, boards: np.array) -> int:
-    for draw in draws:
-        # set all elements that are equal to draw to inf
-        boards[boards==draw] = np.inf
-        bingo = check_all(boards)
+    def __task1(self) -> int:
+        self.task1 = 0 # no winner
 
-        if bingo >= 0: # not negative implies a bingo
-            return int(score(boards[bingo], draw))
-
-    return 0 # no winner
-
-def task2(draws: np.array, boards: np.array) -> int:
-    # np.array to keep track which boards one first, second, etc.
-    # and with which score
-    scores = np.zeros((boards.shape[0],2))
-
-    for j,board in enumerate(boards):
-        for i,draw in enumerate(draws):
+        for draw in self.draws:
             # set all elements that are equal to draw to inf
-            board[board==draw] = np.inf
+            self.boards[self.boards == draw] = np.inf
+            bingo = self.__check_all(self.boards)
 
-            if check_single(board): # implies a bingo
-                scores[j,] = [i, score(board, draw)]
-                break # stop inner for loop, move to next board
+            if bingo >= 0: # not negative implies a bingo
+                self.task1 = int(self.__score(self.boards[bingo], draw))
 
-    return scores[np.argmax(scores[:,0])][1] # equal to 0 if no winner
+    def __task2(self) -> int:
+        # np.array to keep track which boards one first, second, etc.
+        # and with which score
+        scores = np.zeros((self.boards.shape[0],2))
 
-def check_all(boards: np.array) -> int:
-    # create inf-vector [inf, inf, inf, inf, inf]
-    checkmask = np.empty((5,))
-    checkmask[:] = np.inf
+        for j,board in enumerate(self.boards):
+            for i,draw in enumerate(self.draws):
+                # set all elements that are equal to draw to inf
+                board[board == draw] = np.inf
 
-    for j,board in enumerate(boards):
+                if self.__check_single(board): # implies a bingo
+                    scores[j,] = [i, self.__score(board, draw)]
+                    break # stop inner for loop, move to next board
+
+        # equal to 0 if no winner
+        self.task2 = int(scores[np.argmax(scores[:,0])][1])
+
+    def __check_all(self, boards: np.array) -> int:
+        # create inf-vector [inf, inf, inf, inf, inf]
+        checkmask = np.empty((5,))
+        checkmask[:] = np.inf
+
+        for j,board in enumerate(boards):
+            for i in range(0, 5):
+                # check for vertical and horizontal inf-vector
+                if np.all(board[i] == checkmask) or \
+                            np.all(board[:,i] == checkmask):
+                    return j # board index
+        
+        return -1
+
+    def __check_single(self, board: np.array) -> bool:
+        # create inf-vector [inf, inf, inf, inf, inf]
+        checkmask = np.empty((5,))
+        checkmask[:] = np.inf
+
         for i in range(0, 5):
             # check for vertical and horizontal inf-vector
-            if np.all(board[i] == checkmask) or np.all(board[:,i] == checkmask):
-                return j # board index
-    
-    return -1
+            if np.all(board[i] == checkmask) or \
+                        np.all(board[:,i] == checkmask):
+                return True
 
-def check_single(board: np.array) -> bool:
-    # create inf-vector [inf, inf, inf, inf, inf]
-    checkmask = np.empty((5,))
-    checkmask[:] = np.inf
+        return False
 
-    for i in range(0, 5):
-        # check for vertical and horizontal inf-vector
-        if np.all(board[i] == checkmask) or np.all(board[:,i] == checkmask):
-            return True
+    def __score(self, board: np.array, draw: int) -> int:
+        # sum up elements that aren't inf, multiply by draw
+        return np.sum(board[board != np.inf]) * draw
 
-    return False
-
-def score(board: np.array, draw: int) -> int:
-    # sum up elements that aren't inf, multiply by draw
-    return np.sum(board[board != np.inf]) * draw
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
-(draws, boards) = init()
-print(f"1.) {task1(draws, boards)}\t2.) {task2(draws, boards)}")
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

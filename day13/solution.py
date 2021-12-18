@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-import os, sys
 import numpy as np
 
-def init() -> tuple:
-    os.chdir(os.path.dirname(sys.argv[0])) # change working dir
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            lines = f.readlines()
 
-    with open("input", "r") as f:
         coords = list()
         folds = list()
 
-        for line in f.readlines():
+        for line in lines:
             line = line.strip()
 
             if line.startswith("fold"):
@@ -24,36 +24,45 @@ def init() -> tuple:
 
         arr[tuple(list(zip(*coords)))] = 1
 
-        return arr, folds
+        self.coords = arr
+        self.folds = folds
+        self.__tasks()
 
-def tasks(data: tuple) -> tuple:
-    (coords, folds) = data
-    task1 = 0
+    def __tasks(self) -> int:
+        self.task1 = 0
 
-    for i,fold in enumerate(folds):
-        if fold[0] == "y":
-            bottom_fold = coords[:fold[1]:-1]
-            top_fold = coords[:fold[1]]
+        for i,fold in enumerate(self.folds):
+            if fold[0] == "y":
+                bottom_fold = self.coords[:fold[1]:-1]
+                top_fold = self.coords[:fold[1]]
 
-            top_fold[top_fold.shape[0] - bottom_fold.shape[0]:] += bottom_fold
-            coords = top_fold
-        else:
-            left_fold = coords[:,:fold[1]:-1]
-            right_fold = coords[:,:fold[1]]
+                top_fold[top_fold.shape[0] - bottom_fold.shape[0]:] += \
+                            bottom_fold
+                self.coords = top_fold
+            else:
+                left_fold = self.coords[:,:fold[1]:-1]
+                right_fold = self.coords[:,:fold[1]]
 
-            left_fold[:,left_fold.shape[1] - right_fold.shape[1]:] += right_fold
-            coords = left_fold
+                left_fold[:,left_fold.shape[1] - right_fold.shape[1]:] += \
+                            right_fold
+                self.coords = left_fold
 
-        if i == 0:
-            task1 = np.count_nonzero(coords)
+            if i == 0:
+                self.task1 = np.count_nonzero(self.coords)
 
-    task2 = "\n\n"
-    for line in coords:
-        for c in line:
-            task2 += "#" if c >= 1 else " "
+        self.task2 = "\n\n"
+        for line in self.coords:
+            for c in line:
+                self.task2 += "#" if c >= 1 else " "
 
-        task2 += "\n"
+            self.task2 += "\n"
 
-    return (task1,task2)
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
-print("1.) {}\t2.) {}".format(*tasks(init())))
+
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

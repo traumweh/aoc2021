@@ -1,49 +1,51 @@
 #!/usr/bin/env python3
-import os, sys
 
-def init() -> tuple:
-    os.chdir(os.path.dirname(sys.argv[0])) # change working dir
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            lines = f.readlines()
 
-    with open("input", "r") as f:
-        lines = f.readlines()
         template = lines[0].strip()
-        rules = dict()
-        elements = dict()
+        self.elements = dict()
+        self.rules = dict()
 
         for line in lines[2:]:
             line = line.strip().split(" -> ")
-            rules[line[0]] = line[1]
-            elements[line[1]] = 0
+            self.elements[line[1]] = 0
+            self.rules[line[0]] = line[1]
 
-        pairs = {rule:0 for rule in rules.keys()}
+        self.pairs = {rule:0 for rule in self.rules.keys()}
 
         for i in range(len(template) - 1):
-            pairs[template[i:i+2]] += 1
-            elements[template[i]] += 1
+            self.pairs[template[i:i+2]] += 1
+            self.elements[template[i]] += 1
 
-        elements[template[-1]] += 1
-        return pairs, elements, rules
+        self.elements[template[-1]] += 1
+        self.__tasks()
 
-def tasks(pairs: dict, elements: dict, rules: dict) -> tuple:
-    pairs, elements = calc(10, pairs, elements, rules)
-    task1 = max(elements.values()) - min(elements.values())
+    def __tasks(self) -> int:
+        self.__calc(10)
+        self.task1 = max(self.elements.values()) - min(self.elements.values())
 
-    pairs, elements = calc(30, pairs, elements, rules)
-    task2 = max(elements.values()) - min(elements.values())
+        self.__calc(30)
+        self.task2 = max(self.elements.values()) - min(self.elements.values())
 
-    return (task1,task2)
+    def __calc(self, steps: int,) -> tuple:
+        for _ in range(steps):
+            for key, val in self.pairs.copy().items():
+                new = self.rules[key]
 
-def calc(steps: int, pairs: dict, elements: dict, rules: dict) -> tuple:
-    for _ in range(steps):
-        for key, val in pairs.copy().items():
-            new = rules[key]
+                self.pairs[key] -= val
+                self.pairs[key[0] + new] += val
+                self.pairs[new + key[1]] += val
+                self.elements[new] += val
 
-            pairs[key] -= val
-            pairs[key[0] + new] += val
-            pairs[new + key[1]] += val
-            elements[new] += val
-
-    return pairs, elements
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
-print("1.) {}\t2.) {}".format(*tasks(*init())))
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

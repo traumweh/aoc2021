@@ -1,38 +1,38 @@
 #!/usr/bin/env python3
-import os, sys
 
-def init() -> list:
-    # change working dir
-    os.chdir(os.path.dirname(sys.argv[0]))
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            self.data = list(map(lambda x: int(x), f.readlines()))
 
-    # load and int-cast data
-    with open("input", "r") as f:
-        data = list(map(lambda x: int(x), f.readlines()))
-    return data
+        self.__task1()
+        self.__task2()
 
-def task1(data: list) -> int:
-    c = 0
+    def __task1(self) -> int:
+        self.task1 = 0
 
-    for i in range(1, len(data)):
-        if data[i - 1] < data[i]:
-            c += 1
+        for i in range(1, len(self.data)):
+            if self.data[i - 1] < self.data[i]:
+                self.task1 += 1
 
-    return c
+    def __task2(self) -> int:
+        prev = sum(self.data[0:3])
+        self.task2 = 0
 
-def task2(data: list) -> int:
-    prev = sum(data[0:3])
-    c = 0
+        for i in range(1, len(self.data) - 2):
+            new = sum(self.data[i:i+3])
 
-    for i in range(1, len(data) - 2):
-        new = sum(data[i:i+3])
+            if prev < new:
+                self.task2 += 1
 
-        if prev < new:
-            c += 1
+            prev = new
 
-        prev = new
-
-    return c
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
-data = init()
-print(f"1.) {task1(data)}\t2.) {task2(data)}")
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

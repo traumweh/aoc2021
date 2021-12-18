@@ -1,61 +1,65 @@
 #!/usr/bin/env python3
-import os, sys
 
-def init() -> list:
-    os.chdir(os.path.dirname(sys.argv[0])) # change working dir
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            lines = f.readlines()
 
-    with open("input", "r") as f:
-        data = dict()
+        self.data = dict()
 
-        for line in f.readlines():
+        for line in lines:
             edge = line.strip().split("-")
 
             if edge[1] != "start": # ignore edges to the start
-                if edge[0] in data: data[edge[0]].append(edge[1])
-                else: data[edge[0]] = [edge[1]]
+                if edge[0] in self.data: self.data[edge[0]].append(edge[1])
+                else: self.data[edge[0]] = [edge[1]]
             if edge[0] != "start": # ignore edges to the start
-                if edge[1] in data: data[edge[1]].append(edge[0])
-                else: data[edge[1]] = [edge[0]]
+                if edge[1] in self.data: self.data[edge[1]].append(edge[0])
+                else: self.data[edge[1]] = [edge[0]]
 
-        return data
+        self.__task1()
+        self.__task2()
 
-def task1(data: list) -> int:
-    task1 = 0
-    tmp_paths = [["start"]]
+    def __task1(self) -> int:
+        self.task1 = 0
+        tmp_paths = [["start"]]
 
-    while len(tmp_paths) > 0:
-        new_paths = []
+        while len(tmp_paths) > 0:
+            new_paths = []
 
-        for path in tmp_paths:
-            for node in data[path[-1]]:
-                if node == "end": task1 += 1
-                elif len(path) == 1 or not node.islower() \
-                        or node.islower() and not node in path:
-                    new_paths.append(path + [node])
+            for path in tmp_paths:
+                for node in self.data[path[-1]]:
+                    if node == "end": self.task1 += 1
+                    elif len(path) == 1 or not node.islower() \
+                            or node.islower() and not node in path:
+                        new_paths.append(path + [node])
 
-        tmp_paths = new_paths
+            tmp_paths = new_paths
 
-    return task1
+    def __task2(self) -> int:
+        self.task2 = 0
+        tmp_paths = [(False, ["start"])]
 
-def task2(data: list) -> int:
-    task2 = 0
-    tmp_paths = [(False, ["start"])]
+        while len(tmp_paths) > 0:
+            new_paths = []
 
-    while len(tmp_paths) > 0:
-        new_paths = []
+            for path in tmp_paths:
+                for node in self.data[path[1][-1]]:
+                    if node == "end": self.task2 += 1
+                    elif len(path) == 1 or not node.islower() \
+                            or (node.islower() and not node in path[1]):
+                        new_paths.append((path[0], path[1] + [node]))
+                    elif node.islower() and node in path[1] and not path[0]:
+                        new_paths.append((True, path[1] + [node]))
 
-        for path in tmp_paths:
-            for node in data[path[1][-1]]:
-                if node == "end": task2 += 1
-                elif len(path) == 1 or not node.islower() \
-                        or (node.islower() and not node in path[1]):
-                    new_paths.append((path[0], path[1] + [node]))
-                elif node.islower() and node in path[1] and not path[0]:
-                    new_paths.append((True, path[1] + [node]))
+            tmp_paths = new_paths
 
-        tmp_paths = new_paths
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
-    return task2
 
-data = init()
-print(f"1.) {task1(data)}\t2.) {task2(data)}")
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))

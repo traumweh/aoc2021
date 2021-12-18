@@ -1,44 +1,49 @@
 #!/usr/bin/env python3
-import os, sys
 import numpy as np
 
-def init() -> np.array:
-    # change working dir
-    os.chdir(os.path.dirname(sys.argv[0]))
+class Tasks:
+    def __init__(self, filepath):
+        with open(filepath, "r") as f:
+            lines = f.readlines()
 
-    # load and int-cast data
-    with open("input", "r") as f:
-        lines = f.readlines()
-        data = np.empty((len(lines), 2, 2), dtype=np.int32)
+        self.data = np.empty((len(lines), 2, 2), dtype=np.int32)
 
         for i,line in enumerate(lines):
-            data[i] = list(map(lambda x: x.split(","), line.split(" -> ")))
+            self.data[i] = list(map(lambda x: x.split(","),
+                    line.split(" -> ")))
 
-    return data
+        self.__task1()
+        self.__task2()
 
-def task1(data: np.array) -> int:
-    maximum = np.max(data) + 1
-    overlaps = np.zeros((maximum, maximum), dtype=np.int32)
+    def __task1(self) -> int:
+        maximum = np.max(self.data) + 1
+        overlaps = np.zeros((maximum, maximum), dtype=np.int32)
 
-    for (x1,y1), (x2,y2) in data:
-        if x1 == x2:
-            overlaps[x1, min(y1,y2):max(y1,y2) + 1] += 1
-        elif y1 == y2:
-            overlaps[min(x1,x2):max(x1,x2) + 1, y1] += 1
+        for (x1,y1), (x2,y2) in self.data:
+            if x1 == x2:
+                overlaps[x1, min(y1,y2):max(y1,y2) + 1] += 1
+            elif y1 == y2:
+                overlaps[min(x1,x2):max(x1,x2) + 1, y1] += 1
 
-    return len(overlaps[overlaps >= 2])
+        self.task1 = len(overlaps[overlaps >= 2])
 
-def task2(data: np.array) -> int:
-    maximum = np.max(data) + 1
-    overlaps = np.zeros((maximum, maximum), dtype=np.int32)
+    def __task2(self) -> int:
+        maximum = np.max(self.data) + 1
+        overlaps = np.zeros((maximum, maximum), dtype=np.int32)
 
-    for (x1,y1), (x2,y2) in data:
-        xs = np.linspace(x1,x2,abs(x1-x2) + 1, dtype=np.int32)
-        ys = np.linspace(y1,y2,abs(y1-y2) + 1, dtype=np.int32)
-        overlaps[xs, ys] += 1
+        for (x1,y1), (x2,y2) in self.data:
+            xs = np.linspace(x1,x2,abs(x1-x2) + 1, dtype=np.int32)
+            ys = np.linspace(y1,y2,abs(y1-y2) + 1, dtype=np.int32)
+            overlaps[xs, ys] += 1
 
-    return len(overlaps[overlaps >= 2])
+        self.task2 = len(overlaps[overlaps >= 2])
+
+    def __repr__(self) -> str:
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
-data = init()
-print(f"1.) {task1(data)}\t2.) {task2(data)}")
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2: print(Tasks(argv[1]))
+    else: print(Tasks("input"))
