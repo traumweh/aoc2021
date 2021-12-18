@@ -7,19 +7,17 @@ class Tasks:
             raw = f.readlines()
 
         # extract first row as float32-np.array
-        draws = np.fromiter([s for s in raw.pop(0).split(",")], 
+        self.draws = np.fromiter([s for s in raw.pop(0).split(",")], 
                     dtype=np.float32)
 
         # convert bingo boards into np.array of dim (#boards, 5, 5)
-        boards = np.zeros((len(raw) // 6,5,5))
+        self.boards = np.zeros((len(raw) // 6,5,5))
 
         for i,s in enumerate(raw):
             if i % 6 != 0: # == 0 is an empty row
                 # add row as float32-row to board in boards-array
-                boards[i // 6, (i % 6) - 1] = s.strip().split()
+                self.boards[i // 6, (i % 6) - 1] = s.strip().split()
 
-        self.draws = draws
-        self.boards = boards
         self.__task1()
         self.__task2()
 
@@ -29,10 +27,11 @@ class Tasks:
         for draw in self.draws:
             # set all elements that are equal to draw to inf
             self.boards[self.boards == draw] = np.inf
-            bingo = self.__check_all(self.boards)
+            bingo = self.__check_all()
 
             if bingo >= 0: # not negative implies a bingo
                 self.task1 = int(self.__score(self.boards[bingo], draw))
+                break
 
     def __task2(self) -> int:
         # np.array to keep track which boards one first, second, etc.
@@ -51,12 +50,12 @@ class Tasks:
         # equal to 0 if no winner
         self.task2 = int(scores[np.argmax(scores[:,0])][1])
 
-    def __check_all(self, boards: np.array) -> int:
+    def __check_all(self) -> int:
         # create inf-vector [inf, inf, inf, inf, inf]
         checkmask = np.empty((5,))
         checkmask[:] = np.inf
 
-        for j,board in enumerate(boards):
+        for j,board in enumerate(self.boards):
             for i in range(0, 5):
                 # check for vertical and horizontal inf-vector
                 if np.all(board[i] == checkmask) or \
