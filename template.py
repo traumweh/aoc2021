@@ -15,7 +15,7 @@ class Tasks:
         self.task2 = 0
 
     def __repr__(self) -> str:
-        return f"1.) {self.task1}\t2.) {self.task2}"
+        return f"1.) {self.task1:<16}\t2.) {self.task2:<16}"
 
 
 if __name__ == "__main__":
