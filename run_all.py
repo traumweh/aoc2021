@@ -2,7 +2,7 @@
 from importlib import import_module
 from time import time
 
-for i in range(1, 22):
+for i in range(1, 23):
     module = import_module(f"days.{i:02}.solution")
 
     t1 = time()
